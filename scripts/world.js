@@ -111,6 +111,8 @@ export class World extends THREE.Group {
                     maxCount);
                 mesh.name = blockType.name
                 mesh.count = 0
+                mesh.receiveShadow = true
+                mesh.castShadow = true
                 meshes[blockType.id] = mesh
             })
 
