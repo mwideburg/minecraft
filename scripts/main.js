@@ -20,7 +20,7 @@ document.body.appendChild(renderer.domElement)
 
 // Camera Setup
 const orbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight);
-orbitCamera.position.set(2, 2, 2);
+orbitCamera.position.set(45, 45, 45);
 orbitCamera.lookAt(0, 0, 0)
 
 // Add Controls
@@ -67,9 +67,7 @@ function animate() {
     const dt = (currentTime - previousTime) / 1000;
     requestAnimationFrame(animate)
     stats.update()
-
-    player.applyInputs(dt)
-    player.updateBoundsHelper()
+    
     physics.update(dt, player, world)
     renderer.render(scene, player.controls.isLocked ? player.camera : orbitCamera)
 

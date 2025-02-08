@@ -22,7 +22,7 @@ export class World extends THREE.Group {
             offset: 0.2,
         }
     }
-    constructor(size = { width: 32, height: 16 }) {
+    constructor(size = { width: 64, height: 16 }) {
         super()
         this.size = size
     }
