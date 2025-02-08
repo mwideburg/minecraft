@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/Addons.js'
 
 export class Player {
+    radius = 0.5;
+    height = 1.75;
+    
     maxSpeed = 10;
     input = new THREE.Vector3();
     velocity = new THREE.Vector3()
@@ -13,11 +16,17 @@ export class Player {
      * @param {THREE.Scene} scene 
      */
     constructor(scene) {
-        this.camera.position.set(32, 16, 32)
+        this.camera.position.set(32, 5, 32)
         scene.add(this.camera)
         scene.add(this.cameraHelper)
         document.addEventListener('keydown', this.onKeyDown.bind(this))
         document.addEventListener('keyup', this.onKeyUp.bind(this))
+
+        this.boundHelper = new THREE.Mesh(
+            new THREE.CylinderGeometry(this.radius, this.radius, this.height, 16),
+            new THREE.MeshBasicMaterial({wireframe: true})
+        )
+        scene.add(this.boundHelper)
     }
 
     applyInputs(dt){
@@ -29,6 +38,11 @@ export class Player {
             
             document.getElementById('player-position').innerHTML = this.toString()
         }
+    }
+
+    updateBoundsHelper(){
+        this.boundHelper.position.copy(this.position)
+        this.boundHelper.position.y -= this.height/2
     }
 
     /**
