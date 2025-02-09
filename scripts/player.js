@@ -20,7 +20,7 @@ export class Player {
      * @param {THREE.Scene} scene 
      */
     constructor(scene) {
-        this.camera.position.set(32, 10, 32)
+        this.camera.position.set(32, 32, 32)
         scene.add(this.camera)
         scene.add(this.cameraHelper)
         document.addEventListener('keydown', this.onKeyDown.bind(this))
