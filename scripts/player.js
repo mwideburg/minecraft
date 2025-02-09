@@ -1,12 +1,15 @@
 import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/Addons.js'
+import { World } from './world';
+
+const CENTER_SCREEN = new THREE.Vector2()
 
 export class Player {
     radius = 0.5;
     height = 1.75;
     jumpSpeed = 10;
     onGround = false;
-    
+
     maxSpeed = 10;
     input = new THREE.Vector3();
     velocity = new THREE.Vector3()
@@ -15,6 +18,9 @@ export class Player {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 200)
     controls = new PointerLockControls(this.camera, document.body)
     cameraHelper = new THREE.CameraHelper(this.camera)
+
+    raycaster = new THREE.Raycaster(new THREE.Vector3, new THREE.Vector3, 0, 3)
+    selectedCoords = null;
     /**
      * 
      * @param {THREE.Scene} scene 
@@ -28,19 +34,22 @@ export class Player {
 
         this.boundHelper = new THREE.Mesh(
             new THREE.CylinderGeometry(this.radius, this.radius, this.height, 16),
-            new THREE.MeshBasicMaterial({wireframe: true})
+            new THREE.MeshBasicMaterial({ wireframe: true })
         )
-        scene.add(this.boundHelper)
+        // scene.add(this.boundHelper)
+
+        const selectionMaterial = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.3,
+            color: 0xffffaa
+        })
+        const selectionGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01)
+        this.selectionHelper = new THREE.Mesh(selectionGeometry, selectionMaterial)
+        scene.add(this.selectionHelper)
     }
 
-    get worldVelocity() {
-        this.#worldVelocity.copy(this.velocity)
-        this.#worldVelocity.applyEuler(new THREE.Euler(0, this.camera.rotation.y, 0))
-        return this.#worldVelocity
-    }
-
-    applyInputs(dt){
-        if(this.controls.isLocked){
+    applyInputs(dt) {
+        if (this.controls.isLocked) {
             this.velocity.x = this.input.x
             this.velocity.z = this.input.z
             this.controls.moveRight(this.velocity.x * dt)
@@ -50,17 +59,43 @@ export class Player {
         }
     }
 
-    updateBoundsHelper(){
+    updateBoundsHelper() {
         this.boundHelper.position.copy(this.position)
-        this.boundHelper.position.y -= this.height/2
+        this.boundHelper.position.y -= this.height / 2
     }
 
     /**
-     * Returns current player position
-     * @type {THREE.Vector3} 
+     * 
+     * @param {World} world 
      */
-    get position() {
-        return this.camera.position
+    update(world){
+        this.updateRaycaster(world)
+    }
+
+    /**
+     * 
+     * @param {World} world 
+     */
+    updateRaycaster(world){
+        this.raycaster.setFromCamera(CENTER_SCREEN, this.camera)
+        const intersections = this.raycaster.intersectObject(world, true);
+        
+        if(intersections.length){
+            const intersection = intersections[0]
+
+            const chunk = intersection.object.parent
+            // Get transformation matrix of intersection
+            const blockMatrix = new THREE.Matrix4()
+            intersection.object.getMatrixAt(intersection.instanceId, blockMatrix)
+
+            this.selectedCoords = chunk.position.clone()
+            this.selectedCoords.applyMatrix4(blockMatrix) 
+            this.selectionHelper.position.copy(this.selectedCoords) 
+            this.selectionHelper.visible = true
+        }else{
+            this.selectedCoords = null
+            this.selectionHelper.visible = false
+        }
     }
 
     /**
@@ -70,7 +105,7 @@ export class Player {
     onKeyDown(event) {
         if (!this.controls.isLocked) {
             this.controls.lock()
-            console.log("controls locked")
+            // console.log("controls locked")
         }
 
         switch (event.code) {
@@ -91,7 +126,7 @@ export class Player {
                 this.velocity.set(0, 0, 0)
                 break;
             case 'Space':
-                if(this.onGround){
+                if (this.onGround) {
                     this.velocity.y += this.jumpSpeed
                 }
 
@@ -119,11 +154,11 @@ export class Player {
         }
     }
 
-    toString(){
+    toString() {
         let str = ''
-        str += `X:${this.position.x.toFixed(3)} ` 
-        str += `Y:${this.position.y.toFixed(3)} ` 
-        str += `Z:${this.position.z.toFixed(3)} ` 
+        str += `X:${this.position.x.toFixed(3)} `
+        str += `Y:${this.position.y.toFixed(3)} `
+        str += `Z:${this.position.z.toFixed(3)} `
         return str
     }
 
@@ -131,8 +166,24 @@ export class Player {
      * 
      * @param {THREE.Vector3} dv 
      */
-    applyWorldVelocity(dv){
+    applyWorldVelocity(dv) {
         dv.applyEuler(new THREE.Euler(0, -this.camera.rotation.y, 0))
         this.velocity.add(dv)
     }
+
+    /**
+     * Returns current player position
+     * @type {THREE.Vector3} 
+     */
+    get position() {
+        return this.camera.position
+    }
+
+
+    get worldVelocity() {
+        this.#worldVelocity.copy(this.velocity)
+        this.#worldVelocity.applyEuler(new THREE.Euler(0, this.camera.rotation.y, 0))
+        return this.#worldVelocity
+    }
+
 }

@@ -108,7 +108,7 @@ export class World extends TRHEE.Group {
         for (const chunk of chunksToRemove) {
             chunk.disposeChildren()
             this.remove(chunk);
-            console.log(`Removed chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
+            // console.log(`Removed chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
         }
     }
 
@@ -128,7 +128,7 @@ export class World extends TRHEE.Group {
             chunk.generate();
         }
         this.add(chunk);
-        console.log(`Added chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
+        // console.log(`Added chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
     }
 
     /**
@@ -198,5 +198,20 @@ export class World extends TRHEE.Group {
             }
         })
         this.clear();
+    }
+
+    /**
+     * Removes block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    removeBlock(x, y, z){
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if(chunk){
+            chunk.removeBlock(coords.block.x, coords.block.y, coords.block.z)
+        }
     }
 }
