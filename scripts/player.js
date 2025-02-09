@@ -90,6 +90,11 @@ export class Player {
                 this.position.set(32, 16, 32)
                 this.velocity.set(0, 0, 0)
                 break;
+            case 'Space':
+                if(this.onGround){
+                    this.velocity.y += this.jumpSpeed
+                }
+
         }
     }
 

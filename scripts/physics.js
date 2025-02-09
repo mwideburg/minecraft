@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Player } from './player'
-import { World } from './world'
+import { WorldChunk } from './worldChunk'
 import { blocks } from './blocks'
 
 const collisionMaterial = new THREE.MeshBasicMaterial({
@@ -17,6 +17,9 @@ const contactMaterial = new THREE.MeshBasicMaterial({
 const contactGeometry = new THREE.SphereGeometry(0.05, 6, 6);
 
 export class Physics {
+    simulationRate = 200;
+    timestep = 1 / this.simulationRate;
+    accumulator = 0
     gravity = 32;
 
     constructor(scene) {
@@ -28,23 +31,29 @@ export class Physics {
      * Moves the physics simulation forward in time
      * @param {number} dt
      * @param {Player} player
-     * @param {World} world
+     * @param {WorldChunk} world
      */
     update(dt, player, world) {
-        this.helpers.clear()
-        player.velocity.y -= this.gravity * dt
-        player.applyInputs(dt)
-        player.updateBoundsHelper()
-        this.detectCollisions(player, world)
+        this.accumulator += dt
+
+        while (this.accumulator >= this.timestep) {
+            this.helpers.clear()
+            player.velocity.y -= this.gravity * this.timestep;
+            player.applyInputs(this.timestep)
+            player.updateBoundsHelper()
+            this.detectCollisions(player, world)
+
+            this.accumulator -= this.timestep;
+        }
     }
 
     /**
      * Main function to detect collisions
      * @param {Player} player 
-     * @param {World} world 
+     * @param {WorldChunk} world 
      */
     detectCollisions(player, world) {
-        
+        player.onGround = false
         const candidates = this.broadPhase(player, world)
         const collisions = this.narrowPhase(candidates, player)
 
@@ -56,7 +65,7 @@ export class Physics {
     /**
      * Possible blocks the player will collide into
      * @param {Player} player 
-     * @param {World} world 
+     * @param {WorldChunk} world 
      * @returns {[]}
      */
     broadPhase(player, world) {
@@ -142,7 +151,7 @@ export class Physics {
             }
         }
 
-        console.log(`Narrowphase Collisions: ${collisions.length}`);
+        // console.log(`Narrowphase Collisions: ${collisions.length}`);
 
         return collisions;
     }
@@ -158,6 +167,9 @@ export class Physics {
         })
 
         for (const collision of collisions) {
+            
+            if (!this.pointInPlayerBoundingCylinder(collision.contactPoint, player)) continue;
+
             let deltaPosition = collision.normal.clone()
             deltaPosition.multiplyScalar(collision.overlap)
             player.position.add(deltaPosition);
