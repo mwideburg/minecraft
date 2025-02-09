@@ -68,19 +68,19 @@ function animate() {
     requestAnimationFrame(animate)
     stats.update()
     
-    physics.update(dt, player, world)
+    physics.update(dt, player, world);
+    world.update(player)
     renderer.render(scene, player.controls.isLocked ? player.camera : orbitCamera)
-
-    window.addEventListener("resize", () => {
-        orbitCamera.aspect = window.innerWidth / window.innerHeight
-        orbitCamera.updateProjectionMatrix()
-        player.camera.aspect = window.innerWidth / window.innerHeight
-        player.camera.updateProjectionMatrix()
-        renderer.setSize(window.innerWidth, window.innerHeight)
-    })
     previousTime = currentTime
 }
 
+window.addEventListener("resize", () => {
+    orbitCamera.aspect = window.innerWidth / window.innerHeight
+    orbitCamera.updateProjectionMatrix()
+    player.camera.aspect = window.innerWidth / window.innerHeight
+    player.camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+})
 setUpLights()
 createUI(world, player)
 animate()

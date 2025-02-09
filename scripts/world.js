@@ -1,7 +1,11 @@
 import * as TRHEE from 'three'
 import { WorldChunk } from './worldChunk'
+import { Player } from './player';
 
 export class World extends TRHEE.Group {
+
+    drawDistance = 1;
+
     chunkSize = { width: 64, height: 16 }
     params = {
         seed: 0,
@@ -28,6 +32,59 @@ export class World extends TRHEE.Group {
                 this.add(chunk);
             }
         }
+    }
+
+    /**
+     * 
+     * @param {Player} player 
+     */
+    update(player){
+        const visibleChunks = this.getVisibleChunks(player);
+        // console.log(visibleChunks)
+        const chunksToAdd = this.getChunksToAdd(visibleChunks);
+        // console.log(chunksToAdd)
+
+    }
+
+    /**
+     * Return chunks visible to the player
+     * @param {Player} player 
+     * @returns {{x: number, y:number}[]}
+     */
+    getVisibleChunks(player){
+        const visibleChunks = []
+
+        const coords =  this.worldToChunkCoords(
+            player.position.x,
+            player.position.y,
+            player.position.z
+        )
+
+        const chunkX = coords.chunk.x;
+        const chunkZ = coords.chunk.z;
+
+        for(let x = chunkX - this.drawDistance; x <= chunkX + this.drawDistance; x++){
+            for(let z = chunkZ - this.drawDistance; z <= chunkZ + this.drawDistance; z++){
+                visibleChunks.push({x, z})
+            }
+        }
+
+        return visibleChunks
+    }
+
+    /**
+     * Returns array of coords for the chunks to be added
+     * @param {{x: number, y:number}[]} visibleChunks 
+     * @returns {{x: number, y:number}[]}
+     */
+    getChunksToAdd(visibleChunks){
+       return visibleChunks.filter((chunk) => {
+        const chunkExists = this.children
+            .map((obj) => obj.userData)
+            .find(({x, z}) => chunk.x === x && chunk.z === z)
+        return !chunkExists
+       })
+
     }
 
    /**
