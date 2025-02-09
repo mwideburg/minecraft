@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { World } from './world';
 import { createUI } from './ui';
 import { Player } from './player';
+import { Physics } from './physics';
+import { World } from './world';
 
 const stats = new Stats()
 document.body.append(stats.dom)
@@ -19,7 +20,7 @@ document.body.appendChild(renderer.domElement)
 
 // Camera Setup
 const orbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight);
-orbitCamera.position.set(2, 2, 2);
+orbitCamera.position.set(45, 45, 45);
 orbitCamera.lookAt(0, 0, 0)
 
 // Add Controls
@@ -34,6 +35,8 @@ world.generate()
 scene.add(world)
 
 const player = new Player(scene)
+
+const physics = new Physics(scene)
 
 function setUpLights() {
     const sun = new THREE.DirectionalLight()
@@ -64,8 +67,8 @@ function animate() {
     const dt = (currentTime - previousTime) / 1000;
     requestAnimationFrame(animate)
     stats.update()
-
-    player.applyInputs(dt)
+    
+    physics.update(dt, player, world)
     renderer.render(scene, player.controls.isLocked ? player.camera : orbitCamera)
 
     window.addEventListener("resize", () => {
