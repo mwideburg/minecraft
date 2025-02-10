@@ -88,7 +88,7 @@ export class Physics {
                     if (blockId && blockId !== blocks.empty.id) {
                         const blockPos = { x, y, z }
                         candidates.push(blockPos);
-                        this.addCollisionHelper(blockPos);
+                        // this.addCollisionHelper(blockPos);
                     }
                 }
             }
@@ -147,7 +147,7 @@ export class Physics {
                     overlap
                 });
 
-                this.addContactPointerHelper(closestPoint);
+                // this.addContactPointerHelper(closestPoint);
             }
         }
 

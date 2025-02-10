@@ -1,12 +1,13 @@
 import * as TRHEE from 'three'
 import { WorldChunk } from './worldChunk'
 import { Player } from './player';
+import { DataStore } from './dataStore';
 
 export class World extends TRHEE.Group {
 
     asyncLoading = true;
-    
-    drawDistance = 2 ;
+
+    drawDistance = 2;
 
     chunkSize = { width: 32, height: 32 }
     params = {
@@ -18,16 +19,19 @@ export class World extends TRHEE.Group {
         }
     }
 
+    dataStore = new DataStore()
+
     constructor(seed = 0) {
         super();
         this.seed = seed
     }
 
     generate() {
+        this.dataStore.clear()
         this.disposeChunk()
         for (let x = -this.drawDistance; x <= this.drawDistance; x++) {
             for (let z = -this.drawDistance; z <= this.drawDistance; z++) {
-                const chunk = new WorldChunk(this.chunkSize, this.params);
+                const chunk = new WorldChunk(this.chunkSize, this.params, this.dataStore);
                 chunk.position.set(x * this.chunkSize.width, 0, z * this.chunkSize.width);
                 chunk.generate();
                 chunk.userData = { x, z }
@@ -44,7 +48,7 @@ export class World extends TRHEE.Group {
         const visibleChunks = this.getVisibleChunks(player);
         const chunksToAdd = this.getChunksToAdd(visibleChunks);
         this.removeUnusedChunks(visibleChunks)
-        for(const chunk of chunksToAdd){
+        for (const chunk of chunksToAdd) {
             this.generateChunk(chunk.x, chunk.z)
         }
 
@@ -108,7 +112,7 @@ export class World extends TRHEE.Group {
         for (const chunk of chunksToRemove) {
             chunk.disposeChildren()
             this.remove(chunk);
-            console.log(`Removed chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
+            // console.log(`Removed chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
         }
     }
 
@@ -118,17 +122,17 @@ export class World extends TRHEE.Group {
      * @param {number} y 
      */
     generateChunk(x, z) {
-        const chunk = new WorldChunk(this.chunkSize, this.params);
+        const chunk = new WorldChunk(this.chunkSize, this.params, this.dataStore);
         chunk.position.set(x * this.chunkSize.width, 0, z * this.chunkSize.width);
         chunk.userData = { x, z }
 
-        if(this.asyncLoading){
-            requestIdleCallback(chunk.generate.bind(chunk), {timeout: 1000})
-        }else{
+        if (this.asyncLoading) {
+            requestIdleCallback(chunk.generate.bind(chunk), { timeout: 1000 })
+        } else {
             chunk.generate();
         }
         this.add(chunk);
-        console.log(`Added chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
+        // console.log(`Added chunk at X: ${chunk.userData.x} Z: ${chunk.userData.z}`)
     }
 
     /**
@@ -198,5 +202,88 @@ export class World extends TRHEE.Group {
             }
         })
         this.clear();
+    }
+
+    /**
+     * Reveals block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    revealBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.addBlockInstance(
+                coords.block.x,
+                coords.block.y,
+                coords.block.z
+            )
+        }
+    }
+
+    /**
+     * Hide block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    hideBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk && chunk.isBlockObscured(coords.x, coords.y, coords.z)) {
+            chunk.deleteBlockInstance(
+                coords.block.x,
+                coords.block.y,
+                coords.block.z
+            )
+        }
+    }
+
+
+    /**
+     * Add block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z
+     * @param {number} blockId 
+    */
+    addBlock(x, y, z, blockId) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.addBlock(coords.block.x, coords.block.y, coords.block.z, blockId)
+            this.hideBlock(x - 1, y, z)
+            this.hideBlock(x + 1, y, z)
+            this.hideBlock(x, y + 1, z)
+            this.hideBlock(x, y - 1, z)
+            this.hideBlock(x, y, z - 1)
+            this.hideBlock(x, y, z + 1)
+        }
+    }
+
+    /**
+     * Removes block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    removeBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.removeBlock(coords.block.x, coords.block.y, coords.block.z)
+            1
+            this.revealBlock(x - 1, y, z)
+            this.revealBlock(x + 1, y, z)
+            this.revealBlock(x, y + 1, z)
+            this.revealBlock(x, y - 1, z)
+            this.revealBlock(x, y, z - 1)
+            this.revealBlock(x, y, z + 1)
+        }
     }
 }
