@@ -5,8 +5,8 @@ import { Player } from './player';
 export class World extends TRHEE.Group {
 
     asyncLoading = true;
-    
-    drawDistance = 2 ;
+
+    drawDistance = 2;
 
     chunkSize = { width: 32, height: 32 }
     params = {
@@ -44,7 +44,7 @@ export class World extends TRHEE.Group {
         const visibleChunks = this.getVisibleChunks(player);
         const chunksToAdd = this.getChunksToAdd(visibleChunks);
         this.removeUnusedChunks(visibleChunks)
-        for(const chunk of chunksToAdd){
+        for (const chunk of chunksToAdd) {
             this.generateChunk(chunk.x, chunk.z)
         }
 
@@ -122,9 +122,9 @@ export class World extends TRHEE.Group {
         chunk.position.set(x * this.chunkSize.width, 0, z * this.chunkSize.width);
         chunk.userData = { x, z }
 
-        if(this.asyncLoading){
-            requestIdleCallback(chunk.generate.bind(chunk), {timeout: 1000})
-        }else{
+        if (this.asyncLoading) {
+            requestIdleCallback(chunk.generate.bind(chunk), { timeout: 1000 })
+        } else {
             chunk.generate();
         }
         this.add(chunk);
@@ -206,12 +206,40 @@ export class World extends TRHEE.Group {
      * @param {number} y 
      * @param {number} z 
     */
-    removeBlock(x, y, z){
+    removeBlock(x, y, z) {
         const coords = this.worldToChunkCoords(x, y, z)
         const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
 
-        if(chunk){
+        if (chunk) {
             chunk.removeBlock(coords.block.x, coords.block.y, coords.block.z)
+
+            this.revealBlock(x - 1, y, z)
+            this.revealBlock(x + 1, y, z)
+            this.revealBlock(x, y + 1, z)
+            this.revealBlock(x, y - 1, z)
+            this.revealBlock(x, y, z - 1)
+            this.revealBlock(x, y, z + 1)
+        }
+    }
+
+    /**
+     * Reveals block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    revealBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.addBlockInstance(
+                coords.block.x,
+                coords.block.y,
+                coords.block.z
+            )
+
+
         }
     }
 }
