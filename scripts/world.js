@@ -16,6 +16,18 @@ export class World extends TRHEE.Group {
             scale: 30,
             magnitude: 0.1,
             offset: 0.5,
+        },
+        trees:{
+            trunk:{
+                minHeight: 4,
+                maxHeight: 7,
+            },
+            canopy: {
+                minRadius: 2,
+                maxRadius: 4,
+                density: 0.5
+            },
+            frequency: 0.02,
         }
     }
 
