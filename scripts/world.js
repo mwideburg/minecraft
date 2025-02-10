@@ -14,8 +14,9 @@ export class World extends TRHEE.Group {
         seed: 0,
         terrain: {
             scale: 30,
-            magnitude: 0.1,
-            offset: 0.5,
+            magnitude: 10,
+            offset: 4,
+            waterOffset: 5,
         },
         trees:{
             trunk:{

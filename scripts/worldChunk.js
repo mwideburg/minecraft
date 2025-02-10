@@ -32,7 +32,7 @@ export class WorldChunk extends THREE.Group {
         this.initialize();
         this.generateResources(rng);
         this.generateTerrain(rng);
-        this.generateTrees(rng)
+        this.generateTrees()
         this.generateClouds(rng)
         this.loadPlayerChanges()
         this.generateMeshes();
@@ -105,19 +105,21 @@ export class WorldChunk extends THREE.Group {
                 const scaledNoise = this.params.terrain.offset + this.params.terrain.magnitude * value;
 
                 // Compute final height of terrain at this location
-                let height = this.size.height * scaledNoise;
+                let height = Math.floor(scaledNoise);
 
                 // Clamp between 0 and max height
                 height = Math.max(0, Math.min(Math.floor(height), this.size.height - 1));
 
                 // Starting at the terrain height, fill in all the blocks below that height
                 for (let y = 0; y < this.size.height; y++) {
-                    if (y === height) {
-                        this.setBlockId(x, y, z, blocks.grass.id);
-                        // Fill in blocks with dirt if they aren't already filled with something else
-                    } else if (y < height && this.getBlock(x, y, z).id === blocks.empty.id) {
+                    if(y <= this.params.terrain.waterOffset && y <= height){
+                        this.setBlockId(x, y, z, blocks.sand.id)
+                    }else if (y < height && this.getBlock(x, y, z).id === blocks.empty.id) {
                         this.setBlockId(x, y, z, blocks.dirt.id);
                         // Clear everything above
+                    } else if (y === height) {
+                        this.setBlockId(x, y, z, blocks.grass.id);
+                        // Fill in blocks with dirt if they aren't already filled with something else
                     } else if (y > height) {
                         this.setBlockId(x, y, z, blocks.empty.id);
                     }
@@ -126,12 +128,27 @@ export class WorldChunk extends THREE.Group {
         }
     }
 
+    generateWater(){
+        const material = new THREE.MeshLambertMaterial({
+            color: 0x9090e0,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide
+        })
+        const waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(), material)
+        waterMesh.rotateX(-Math.PI / 2)
+        waterMesh.position.set(this.size.width / 2, this.params.terrain.waterOffset + 0.4, this.size.width / 2)
+        waterMesh.scale.set(this.size.width, this.size.width, 1)
+        waterMesh.layers.set(1)
+        this.add(waterMesh)
+    }
+
     /**
      * Generates the meshes from the world data
      */
     generateMeshes() {
         this.disposeChildren();
-
+        this.generateWater()
         // Create lookup table of InstancedMesh's with the block id being the key
         const meshes = {};
         Object.values(blocks)
@@ -176,9 +193,8 @@ export class WorldChunk extends THREE.Group {
 
     /**
      * 
-     * @param {RNG} rng 
      */
-    generateTrees(rng) {
+    generateTrees() {
         const generateTreeTrunk = (x, z, rng) => {
             const minH = this.params.trees.trunk.minHeight
             const maxH = this.params.trees.trunk.maxHeight
@@ -215,7 +231,7 @@ export class WorldChunk extends THREE.Group {
                 }
             }
         }
-
+        let rng = new RNG(this.params.seed)
         let offset = this.params.trees.canopy.maxRadius
         for (let x = offset; x <= this.size.width - offset; x++) {
             for (let z = offset; z <= this.size.width - offset; z++) {

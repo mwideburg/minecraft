@@ -17,8 +17,10 @@ export function createUI(world, player, scene){
     terrainFolder.add(world, 'drawDistance', 0, 5, 1).name('Draw Distance')
     terrainFolder.add(world.params, 'seed', 0, 10000).name('Seed')
     terrainFolder.add(world.params.terrain, 'scale', 10, 100).name('Scale')
-    terrainFolder.add(world.params.terrain, 'magnitude', 0, 1).name('Magnitude')
-    terrainFolder.add(world.params.terrain, 'offset', 0, 1).name('Offset')
+    terrainFolder.add(world.params.terrain, 'magnitude', 0, 32, 1).name('Magnitude')
+    terrainFolder.add(world.params.terrain, 'offset', 0, 32, 1).name('Offset')
+    // Water
+    terrainFolder.add(world.params.terrain, 'waterOffset', 0, 20, 1).name('Water Offset')
     
     //Trees
     const treeFolder = terrainFolder.addFolder('Trees')
@@ -35,6 +37,8 @@ export function createUI(world, player, scene){
     const cloudsFolder = terrainFolder.addFolder('Clouds')
     cloudsFolder.add(world.params.clouds, 'scale', 0, 100).name('Scale')
     cloudsFolder.add(world.params.clouds, 'density', 0, 1).name('Density')
+
+    
 
     const resourcesFolder = terrainFolder.addFolder('Resources')
     resources.forEach((resource) => {
