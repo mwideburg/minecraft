@@ -200,7 +200,6 @@ export class WorldChunk extends THREE.Group {
         mesh.computeBoundingSphere()
 
         this.setBlockInstanceId(x, y, z, null)
-        this.setBlockId(x, y, z, blocks.empty.id)
     }
 
     /**
@@ -214,8 +213,22 @@ export class WorldChunk extends THREE.Group {
 
         if (block && block.id !== blocks.empty.id) {
             this.deleteBlockInstance(x, y, z)
+            this.setBlockId(x, y, z, blocks.empty.id)
         }
 
+    }
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+     * @param {number} blockId
+     */
+    addBlock(x, y, z, blockId) {
+        if(this.getBlock(x, y, z).id === blocks.empty.id){
+            this.setBlockId(x, y, z, blockId)
+            this.addBlockInstance(x, y, z)
+        }
     }
 
     /**

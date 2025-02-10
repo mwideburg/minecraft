@@ -5,6 +5,7 @@ import { createUI } from './ui';
 import { Player } from './player';
 import { Physics } from './physics';
 import { World } from './world';
+import { blocks } from './blocks';
 
 const stats = new Stats()
 document.body.append(stats.dom)
@@ -64,12 +65,22 @@ function setUpLights() {
 
 function onMouseDown(event){
     if(player.controls.isLocked && player.selectedCoords){
-        console.log(`Removing block at ${JSON.stringify(player.selectedCoords)}`)
-        world.removeBlock(
-            player.selectedCoords.x,
-            player.selectedCoords.y,
-            player.selectedCoords.z
-        )
+        if(player.activeBlockId === blocks.empty.id){
+            console.log(`Removing block at ${JSON.stringify(player.selectedCoords)}`)
+            world.removeBlock(
+                player.selectedCoords.x,
+                player.selectedCoords.y,
+                player.selectedCoords.z
+            )
+        }else{
+            console.log(`Adding block at ${JSON.stringify(player.selectedCoords)}`)
+            world.addBlock(
+                player.selectedCoords.x,
+                player.selectedCoords.y,
+                player.selectedCoords.z,
+                player.activeBlockId
+            )
+        }
     }
 }
 document.addEventListener('mousedown', onMouseDown)

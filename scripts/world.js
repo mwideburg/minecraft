@@ -201,28 +201,6 @@ export class World extends TRHEE.Group {
     }
 
     /**
-     * Removes block
-     * @param {number} x 
-     * @param {number} y 
-     * @param {number} z 
-    */
-    removeBlock(x, y, z) {
-        const coords = this.worldToChunkCoords(x, y, z)
-        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
-
-        if (chunk) {
-            chunk.removeBlock(coords.block.x, coords.block.y, coords.block.z)
-
-            this.revealBlock(x - 1, y, z)
-            this.revealBlock(x + 1, y, z)
-            this.revealBlock(x, y + 1, z)
-            this.revealBlock(x, y - 1, z)
-            this.revealBlock(x, y, z - 1)
-            this.revealBlock(x, y, z + 1)
-        }
-    }
-
-    /**
      * Reveals block
      * @param {number} x 
      * @param {number} y 
@@ -238,8 +216,70 @@ export class World extends TRHEE.Group {
                 coords.block.y,
                 coords.block.z
             )
+        }
+    }
+
+    /**
+     * Hide block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    hideBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk && chunk.isBlockObscured(coords.x, coords.y, coords.z)) {
+            chunk.deleteBlockInstance(
+                coords.block.x,
+                coords.block.y,
+                coords.block.z
+            )
+        }
+    }
 
 
+    /**
+     * Add block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z
+     * @param {number} blockId`` 
+    */
+    addBlock(x, y, z, blockId) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.addBlock(coords.block.x, coords.block.y, coords.block.z, blockId)
+            this.hideBlock(x - 1, y, z)
+            this.hideBlock(x + 1, y, z)
+            this.hideBlock(x, y + 1, z)
+            this.hideBlock(x, y - 1, z)
+            this.hideBlock(x, y, z - 1)
+            this.hideBlock(x, y, z + 1)
+        }
+    }
+
+    /**
+     * Removes block
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+    */
+    removeBlock(x, y, z) {
+        const coords = this.worldToChunkCoords(x, y, z)
+        const chunk = this.getChunk(coords.chunk.x, coords.chunk.z)
+
+        if (chunk) {
+            chunk.removeBlock(coords.block.x, coords.block.y, coords.block.z)
+            1
+            this.revealBlock(x - 1, y, z)
+            this.revealBlock(x + 1, y, z)
+            this.revealBlock(x, y + 1, z)
+            this.revealBlock(x, y - 1, z)
+            this.revealBlock(x, y, z - 1)
+            this.revealBlock(x, y, z + 1)
         }
     }
 }
