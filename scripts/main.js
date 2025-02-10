@@ -23,6 +23,7 @@ document.body.appendChild(renderer.domElement)
 const orbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight);
 orbitCamera.position.set(45, 45, 45);
 orbitCamera.lookAt(0, 0, 0)
+orbitCamera.layers.enable(1)
 
 // Add Controls
 const controls = new OrbitControls(orbitCamera, renderer.domElement)
