@@ -31,6 +31,10 @@ export function createUI(world, player, scene){
     canopyFolder.add(world.params.trees.canopy, 'maxRadius', 0, 10, 1).name('MaxRadius')
     canopyFolder.add(world.params.trees.canopy, 'density', 0, 1).name('Canopy Density')
 
+    // Clouds
+    const cloudsFolder = terrainFolder.addFolder('Clouds')
+    cloudsFolder.add(world.params.clouds, 'scale', 0, 100).name('Scale')
+    cloudsFolder.add(world.params.clouds, 'density', 0, 1).name('Density')
 
     const resourcesFolder = terrainFolder.addFolder('Resources')
     resources.forEach((resource) => {
